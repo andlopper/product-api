@@ -2,78 +2,62 @@ package com.andlopper.productapi.controller;
 
 import com.andlopper.productapi.model.Product;
 import com.andlopper.productapi.service.ProductService;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/products")
 public class ProductController {
-    // Injeção de dependência do serviço que acessa os dados dos produtos
+
     private final ProductService productService;
 
-    private final ObjectMapper objectMapper;
-//
-//    @Autowired
-//    public ProductController(ProductService productService) {
-//        this.productService = productService;
-//    }
-
     @Autowired
-    public ProductController(ProductService productService, ObjectMapper objectMapper) {
+    public ProductController(ProductService productService) {
         this.productService = productService;
-        this.objectMapper = objectMapper;
     }
 
-    @GetMapping("/{id}")
-    public Product getProductById(@PathVariable Long id) {
-        return productService.findProductById(id);
-    }
-
-    @GetMapping
-    public List<Product> getProducts(){
-        return productService.findProducts();
-    }
-
+    // Endpoint para criar ou atualizar um produto
     @PostMapping
-    public ResponseEntity<Product> addProduct(@RequestBody Product newProduct) {
-        Product createdProduct = productService.addProduct(newProduct);
-        return ResponseEntity.status(HttpStatus.CREATED).body(createdProduct);
+    public ResponseEntity<Product> saveOrUpdateProduct(@RequestBody Product product) {
+        Product savedProduct = productService.saveProduct(product);
+        return new ResponseEntity<>(savedProduct, HttpStatus.CREATED);
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> removeProduct(@PathVariable Long id){
-        boolean isRemoved = productService.removeProduct(id);
-        if (isRemoved) {
-            return ResponseEntity.noContent().build();
-        } else {
-            return ResponseEntity.notFound().build();
-        }
+    // Endpoint para buscar um produto pelo ID
+    @GetMapping("/{id}")
+    public ResponseEntity<Product> getProductById(@PathVariable Long id) {
+        Optional<Product> product = productService.getProductById(id);
+        return product.map(value -> new ResponseEntity<>(value, HttpStatus.OK))
+                .orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
     }
 
+    // Endpoint para listar todos os produtos
+    @GetMapping
+    public ResponseEntity<List<Product>> getAllProducts() {
+        List<Product> products = productService.getAllProducts();
+        return new ResponseEntity<>(products, HttpStatus.OK);
+    }
+
+    // Endpoint para atualizar um produto existente pelo ID
     @PutMapping("/{id}")
-    public Product updateProduct(@PathVariable Long id, @RequestBody Product updatedProduct) {
-        try {
-            return productService.updateProduct(id, updatedProduct);
-        } catch (ResponseStatusException e) {
-            throw e; // Repassa a exceção para ser tratada pelo Spring e retornar o erro HTTP correto
-        } catch (Exception e) {
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Ocorreu um erro durante a atualização do produto.");
+    public ResponseEntity<Product> updateProduct(@PathVariable Long id, @RequestBody Product updatedProduct) {
+        Product product = productService.updateProduct(id, updatedProduct);
+        if (product != null) {
+            return new ResponseEntity<>(product, HttpStatus.OK);
+        } else {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
     }
 
-    @PatchMapping("/{id}")
-    public ResponseEntity<Product> partialUpdateProduct(@PathVariable Long id, @RequestBody Product updatedProduct) {
-        Product product = productService.partialUpdateProduct(id, updatedProduct);
-        if (product != null) {
-            return ResponseEntity.ok(product);
-        } else {
-            return ResponseEntity.notFound().build();
-        }
+    // Endpoint para excluir um produto pelo ID
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteProduct(@PathVariable Long id) {
+        productService.deleteProduct(id);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 }
