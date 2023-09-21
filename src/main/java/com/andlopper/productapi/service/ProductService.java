@@ -23,7 +23,11 @@ public class ProductService {
         this.messageSource = messageSource;
     }
 
-    // Método para criar ou atualizar um product
+    /**
+     * Cria um novo produto.
+     * @param request Objeto contendo os dados do produto a ser criado.
+     * @return O produto criado.
+     */
     public ProductResponse saveProduct(ProductRequest request) {
         var actualProduct = new ProductEntity();
 
@@ -36,7 +40,11 @@ public class ProductService {
         return ProductMapper.fromEntityToResponse(actualProduct);
     }
 
-    // Método para buscar um product pelo ID
+    /**
+     * Busca um produto pelo ID.
+     * @param id ID do produto a ser buscado.
+     * @return O produto encontrado ou null se nenhum produto com o ID especificado for encontrado.
+     */
     public ProductResponse getProductById(Long id) {
         var actualProduct = productRepository.findById(id)
                 .orElseThrow(() -> new ProductNotFoundException(messageSource.getMessage("product.not.found", new Object[]{id}, null)));
@@ -44,14 +52,22 @@ public class ProductService {
         return ProductMapper.fromEntityToResponse(actualProduct);
     }
 
-    // Método para listar todos os products
+    /**
+     * Busca todos os produtos.
+     * @return Todos os produtos encontrados.
+     */
     public List<ProductResponse> getAllProducts() {
         var products = productRepository.findAll();
 
         return ProductMapper.fromEntityToResponse(products);
     }
 
-    // Método para atualizar um product existente pelo ID
+    /**
+     * Atualiza completamente um produto.
+     * @param id ID do produto a ser atualizado.
+     * @param request Objeto contendo todos os dados do produto a ser alterado.
+     * @return O produto atualizado.
+     */
     public ProductResponse updateProduct(Long id, ProductRequest request) {
         var actualProduct = productRepository.findById(id)
                 .orElseThrow(() -> new ProductNotFoundException(messageSource.getMessage("product.not.found", new Object[]{id}, null)));
@@ -65,7 +81,10 @@ public class ProductService {
         return ProductMapper.fromEntityToResponse(actualProduct);
     }
 
-    // Método para excluir um product pelo ID
+    /**
+     * Deleta um produto.
+     * @param id ID do produto a ser deletado.
+     */
     public void deleteProduct(Long id) {
         productRepository.findById(id)
                 .orElseThrow(() -> new ProductNotFoundException(messageSource.getMessage("product.not.found", new Object[]{id}, null)));
@@ -73,6 +92,12 @@ public class ProductService {
         productRepository.deleteById(id);
     }
 
+    /**
+     * Atualiza parcialmente um produto.
+     * @param id ID do produto a ser parcialmente atualizado.
+     * @param request Objeto contendo os dados do produto a ser parcialmente atualizado.
+     * @return O produto atualizado.
+     */
     public ProductResponse partialUpdateProduct(Long id, ProductRequest request) {
         var actualProduct = productRepository.findById(id)
                 .orElseThrow(() -> new ProductNotFoundException(messageSource.getMessage("product.not.found", new Object[]{id}, null)));
