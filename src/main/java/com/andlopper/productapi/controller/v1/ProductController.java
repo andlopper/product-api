@@ -1,7 +1,8 @@
-package com.andlopper.productapi.controller;
+package com.andlopper.productapi.controller.v1;
 
 import com.andlopper.productapi.model.Product;
 import com.andlopper.productapi.service.ProductService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -11,6 +12,7 @@ import java.util.List;
 import java.util.Optional;
 
 @RestController
+@Tag(name = "product-api")
 @RequestMapping("/products")
 public class ProductController {
 
