@@ -1,6 +1,8 @@
 package com.andlopper.productapi.controller.v1;
 
-import com.andlopper.productapi.model.Product;
+import com.andlopper.productapi.controller.v1.request.ProductRequest;
+import com.andlopper.productapi.controller.v1.response.ProductResponse;
+import com.andlopper.productapi.entity.ProductEntity;
 import com.andlopper.productapi.service.ProductService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,58 +10,58 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
 import java.util.List;
 import java.util.Optional;
 
 @RestController
 @Tag(name = "product-api")
 @RequestMapping("/products")
-public class ProductController {
+public class ProductController implements ProductAPI{
 
     private final ProductService productService;
 
-    @Autowired
     public ProductController(ProductService productService) {
         this.productService = productService;
     }
 
-    // Endpoint para criar ou atualizar um produto
+    @Override
     @PostMapping
-    public ResponseEntity<Product> saveOrUpdateProduct(@RequestBody Product product) {
-        Product savedProduct = productService.saveProduct(product);
-        return new ResponseEntity<>(savedProduct, HttpStatus.CREATED);
+    public ProductResponse saveProduct(@RequestBody ProductRequest productEntity) {
+        return productService.saveProduct(productEntity);
     }
 
-    // Endpoint para buscar um produto pelo ID
+    @Override
     @GetMapping("/{id}")
-    public ResponseEntity<Product> getProductById(@PathVariable Long id) {
-        Optional<Product> product = productService.getProductById(id);
-        return product.map(value -> new ResponseEntity<>(value, HttpStatus.OK))
-                .orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
+    public ProductResponse getProductById(@PathVariable("id") Long id) {
+        return productService.getProductById(id);
     }
 
-    // Endpoint para listar todos os produtos
+    @Override
     @GetMapping
-    public ResponseEntity<List<Product>> getAllProducts() {
-        List<Product> products = productService.getAllProducts();
-        return new ResponseEntity<>(products, HttpStatus.OK);
+    public ResponseEntity<List<ProductResponse>> getAllProducts() {
+        List<ProductResponse> productEntities = productService.getAllProducts();
+        return new ResponseEntity<>(productEntities, HttpStatus.OK);
     }
 
-    // Endpoint para atualizar um produto existente pelo ID
+    @Override
     @PutMapping("/{id}")
-    public ResponseEntity<Product> updateProduct(@PathVariable Long id, @RequestBody Product updatedProduct) {
-        Product product = productService.updateProduct(id, updatedProduct);
-        if (product != null) {
-            return new ResponseEntity<>(product, HttpStatus.OK);
-        } else {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
+    public ProductResponse updateProduct(@PathVariable("id") Long id,
+                                         @Valid @RequestBody ProductRequest request) {
+        return productService.updateProduct(id, request);
     }
 
-    // Endpoint para excluir um produto pelo ID
+    @Override
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteProduct(@PathVariable Long id) {
+    public ResponseEntity<Void> deleteProduct(@PathVariable("id") Long id) {
         productService.deleteProduct(id);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+
+    @Override
+    @PatchMapping("/{id}")
+    public ProductResponse partialUpdateProduct(@PathVariable("id") Long id,
+                                                @Valid @RequestBody ProductRequest request) {
+        return productService.partialUpdateProduct(id, request);
     }
 }

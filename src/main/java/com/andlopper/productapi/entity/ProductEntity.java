@@ -1,4 +1,4 @@
-package com.andlopper.productapi.model;
+package com.andlopper.productapi.entity;
 
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -6,7 +6,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 
 @Entity
-public class Product {
+public class ProductEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -15,10 +15,10 @@ public class Product {
     private Integer quantity;
     private Double price;
 
-    public Product() {
+    public ProductEntity() {
     }
 
-    public Product(Long id, String name, Integer quantity, Double price) {
+    public ProductEntity(Long id, String name, Integer quantity, Double price) {
         this.id = id;
         this.name = name;
         this.quantity = quantity;
