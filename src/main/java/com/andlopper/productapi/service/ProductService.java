@@ -3,22 +3,24 @@ package com.andlopper.productapi.service;
 import com.andlopper.productapi.controller.v1.request.ProductRequest;
 import com.andlopper.productapi.controller.v1.response.ProductResponse;
 import com.andlopper.productapi.entity.ProductEntity;
+import com.andlopper.productapi.exception.ProductNotFoundException;
 import com.andlopper.productapi.mapper.ProductMapper;
 import com.andlopper.productapi.repository.ProductRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.MessageSource;
 import org.springframework.stereotype.Service;
 
-import javax.persistence.EntityNotFoundException;
-import java.io.IOException;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class ProductService {
     private final ProductRepository productRepository;
 
-    public ProductService(ProductRepository productRepository) {
+    private final MessageSource messageSource;
+
+
+    public ProductService(ProductRepository productRepository, MessageSource messageSource) {
         this.productRepository = productRepository;
+        this.messageSource = messageSource;
     }
 
     // Método para criar ou atualizar um product
@@ -37,7 +39,7 @@ public class ProductService {
     // Método para buscar um product pelo ID
     public ProductResponse getProductById(Long id) {
         var actualProduct = productRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException());
+                .orElseThrow(() -> new ProductNotFoundException(messageSource.getMessage("product.not.found", new Object[]{id}, null)));
 
         return ProductMapper.fromEntityToResponse(actualProduct);
     }
@@ -52,7 +54,7 @@ public class ProductService {
     // Método para atualizar um product existente pelo ID
     public ProductResponse updateProduct(Long id, ProductRequest request) {
         var actualProduct = productRepository.findById(id)
-                .orElseThrow();
+                .orElseThrow(() -> new ProductNotFoundException(messageSource.getMessage("product.not.found", new Object[]{id}, null)));
 
         actualProduct.setName(request.getName());
         actualProduct.setPrice(request.getPrice());
@@ -66,14 +68,14 @@ public class ProductService {
     // Método para excluir um product pelo ID
     public void deleteProduct(Long id) {
         productRepository.findById(id)
-                .orElseThrow();
+                .orElseThrow(() -> new ProductNotFoundException(messageSource.getMessage("product.not.found", new Object[]{id}, null)));
 
         productRepository.deleteById(id);
     }
 
     public ProductResponse partialUpdateProduct(Long id, ProductRequest request) {
         var actualProduct = productRepository.findById(id)
-                .orElseThrow();
+                .orElseThrow(() -> new ProductNotFoundException(messageSource.getMessage("product.not.found", new Object[]{id}, null)));
 
         if (request.getName() != null){
             actualProduct.setName(request.getName());
